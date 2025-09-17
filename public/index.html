@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech-to-Text Service Comparison Tool</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Speech-to-Text Service Comparison</h1>
+            <p class="subtitle">Compare AssemblyAI, Deepgram, and OpenAI Whisper in real-time</p>
+        </header>
+
+        <main>
+            <!-- Service Selection -->
+            <section class="service-selection">
+                <h2>Select Services</h2>
+                <div class="services">
+                    <label class="service-checkbox">
+                        <input type="checkbox" id="assemblyai" value="assemblyai" checked>
+                        <span class="service-label assemblyai">
+                            <span class="service-icon">🎯</span>
+                            AssemblyAI
+                        </span>
+                    </label>
+                    <label class="service-checkbox">
+                        <input type="checkbox" id="deepgram" value="deepgram" checked>
+                        <span class="service-label deepgram">
+                            <span class="service-icon">🌊</span>
+                            Deepgram
+                        </span>
+                    </label>
+                    <label class="service-checkbox">
+                        <input type="checkbox" id="openai" value="openai" checked>
+                        <span class="service-label openai">
+                            <span class="service-icon">🤖</span>
+                            OpenAI Whisper
+                        </span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Mode Selection -->
+            <section class="mode-selection">
+                <h2>Select Mode</h2>
+                <div class="mode-toggle">
+                    <label class="mode-option">
+                        <input type="radio" name="mode" value="batch" checked>
+                        <span class="mode-label">
+                            <span class="mode-icon">📁</span>
+                            Batch Mode
+                        </span>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="mode" value="realtime">
+                        <span class="mode-label">
+                            <span class="mode-icon">🎙️</span>
+                            Real-time Mode
+                        </span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Batch Mode Interface -->
+            <section id="batch-interface" class="mode-interface">
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-content">
+                        <span class="upload-icon">📤</span>
+                        <h3>Drop audio file here or click to upload</h3>
+                        <p>Supported formats: MP3, WAV, M4A, WebM (max 25MB)</p>
+                        <input type="file" id="file-input" accept="audio/mpeg,audio/wav,audio/x-m4a,audio/webm" hidden>
+                    </div>
+                </div>
+                
+                <div class="record-section">
+                    <button id="record-btn" class="record-btn">
+                        <span class="record-icon">🎤</span>
+                        Start Recording
+                    </button>
+                    <div class="record-timer" id="record-timer">00:00</div>
+                </div>
+
+                <button id="process-btn" class="process-btn" disabled>
+                    Process Audio
+                </button>
+            </section>
+
+            <!-- Real-time Mode Interface -->
+            <section id="realtime-interface" class="mode-interface" style="display: none;">
+                <div class="realtime-controls">
+                    <button id="stream-btn" class="stream-btn">
+                        <span class="mic-icon">🎙️</span>
+                        <span class="btn-text">Start Streaming</span>
+                    </button>
+                    
+                    <div class="audio-visualizer">
+                        <canvas id="visualizer" width="300" height="100"></canvas>
+                        <div class="audio-level">
+                            <div class="level-bar" id="level-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="connection-status">
+                        <div class="status-item">
+                            <span class="status-indicator" id="socket-status"></span>
+                            Socket.IO
+                        </div>
+                        <div class="status-item assemblyai-status" style="display: none;">
+                            <span class="status-indicator" id="assemblyai-status"></span>
+                            AssemblyAI
+                        </div>
+                        <div class="status-item deepgram-status" style="display: none;">
+                            <span class="status-indicator" id="deepgram-status"></span>
+                            Deepgram
+                        </div>
+                        <div class="status-item openai-status" style="display: none;">
+                            <span class="status-indicator" id="openai-status"></span>
+                            OpenAI
+                        </div>
+                    </div>
+
+                    <div class="audio-settings">
+                        <span>Audio: 16kHz, 16-bit PCM, Mono</span>
+                    </div>
+                </div>
+
+                <div class="realtime-transcripts" id="realtime-transcripts">
+                    <div class="transcript-placeholder">
+                        Click "Start Streaming" to begin real-time transcription
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Display -->
+            <section id="results-section" class="results-section" style="display: none;">
+                <h2>Transcription Results</h2>
+                <div id="results-grid" class="results-grid">
+                    <!-- Results will be dynamically inserted here -->
+                </div>
+
+                <div class="metrics-dashboard">
+                    <h3>Performance Metrics</h3>
+                    <div id="metrics-content" class="metrics-content">
+                        <!-- Metrics will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <div class="export-controls">
+                    <button id="export-json" class="export-btn">Export as JSON</button>
+                    <button id="export-csv" class="export-btn">Export as CSV</button>
+                </div>
+            </section>
+
+            <!-- Error Display -->
+            <div id="error-display" class="error-display" style="display: none;">
+                <span class="error-icon">⚠️</span>
+                <span id="error-message"></span>
+                <button class="error-close" onclick="this.parentElement.style.display='none'">✖</button>
+            </div>
+        </main>
+
+        <footer>
+            <p>Compare speech-to-text services side by side</p>
+            <p class="footer-links">
+                <a href="/health" target="_blank">Health Check</a> | 
+                <a href="/metrics" target="_blank">Metrics</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+name: stt-comparison
+region: nyc
+services:
+- name: web
+  github:
+    repo: your-username/speech-to-text-comparison
+    branch: main
+    deploy_on_push: true
+  dockerfile_path: Dockerfile
+  source_dir: /
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xs
+  http_port: 3000
+  health_check:
+    http_path: /health
+    initial_delay_seconds: 10
+    period_seconds: 30
+    timeout_seconds: 10
+    success_threshold: 1
+    failure_threshold: 3
+  envs:
+  - key: NODE_ENV
+    value: production
+  - key: PORT
+    value: "3000"
+  - key: ASSEMBLYAI_API_KEY
+    type: SECRET
+    value: YOUR_ASSEMBLYAI_KEY
+  - key: DEEPGRAM_API_KEY
+    type: SECRET
+    value: YOUR_DEEPGRAM_KEY
+  - key: OPENAI_API_KEY
+    type: SECRET
+    value: YOUR_OPENAI_KEY
+  cors:
+    allow_origins:
+    - prefix: https://
+    allow_methods:
+    - GET
+    - POST
+    - OPTIONS
+    allow_headers:
+    - Content-Type
+    - Authorization
