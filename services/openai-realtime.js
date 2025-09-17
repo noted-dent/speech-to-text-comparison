@@ -84,6 +84,7 @@ async function createRealtimeSession(options = {}) {
         const transcription = await openai.audio.transcriptions.create({
           file: audioStream,
           model: 'gpt-4o-transcribe',
+          language: 'en',  // Force English transcription
           response_format: 'json'  // gpt-4o-transcribe only supports json format
         });
         
