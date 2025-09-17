@@ -680,9 +680,10 @@ function updateMetrics(data) {
 // Utility functions
 function getSelectedServices() {
     const services = [];
-    document.querySelectorAll('.service-checkbox input:checked').forEach(checkbox => {
-        services.push(checkbox.value);
-    });
+    const selectedService = document.querySelector('input[name="service"]:checked');
+    if (selectedService) {
+        services.push(selectedService.value);
+    }
     return services;
 }
 

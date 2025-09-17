@@ -55,13 +55,13 @@ header h1 {
     flex-wrap: wrap;
 }
 
-.service-checkbox {
+.service-checkbox, .service-radio {
     flex: 1;
     min-width: 150px;
     cursor: pointer;
 }
 
-.service-checkbox input {
+.service-checkbox input, .service-radio input {
     display: none;
 }
 
@@ -77,7 +77,8 @@ header h1 {
     font-weight: 500;
 }
 
-.service-checkbox input:checked + .service-label {
+.service-checkbox input:checked + .service-label,
+.service-radio input:checked + .service-label {
     border-color: currentColor;
     background-color: rgba(0, 0, 0, 0.05);
 }

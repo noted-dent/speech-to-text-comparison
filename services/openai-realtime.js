@@ -9,8 +9,8 @@ const openai = new OpenAI({
 });
 
 /**
- * Create a pseudo real-time transcription session with OpenAI Whisper
- * Note: This is not true real-time as Whisper doesn't support streaming
+ * Create a pseudo real-time transcription session with OpenAI gpt-4o-transcribe
+ * Note: This is not true real-time as gpt-4o-transcribe doesn't support streaming
  * We'll buffer audio chunks and process them in segments
  * @param {Object} options - Configuration options
  * @returns {Promise<Object>} Session object
@@ -83,20 +83,19 @@ async function createRealtimeSession(options = {}) {
         const audioStream = fs.createReadStream(tempPath);
         const transcription = await openai.audio.transcriptions.create({
           file: audioStream,
-          model: 'whisper-1',
-          response_format: 'text',
-          prompt: this.lastProcessedText // Use previous text as context
+          model: 'gpt-4o-transcribe',
+          response_format: 'json'  // gpt-4o-transcribe only supports json format
         });
         
         // Clean up
         await fs.promises.unlink(tempPath);
         
         // Update last processed text for context
-        this.lastProcessedText = transcription;
+        this.lastProcessedText = transcription.text;
         
         // Send transcription result
         if (onTranscript) {
-          onTranscript(transcription, true); // Always final since we process in chunks
+          onTranscript(transcription.text, true); // Always final since we process in chunks
         }
         
       } catch (error) {
@@ -154,7 +153,7 @@ async function createRealtimeSession(options = {}) {
   if (socket) {
     socket.emit('serviceInfo', {
       service: 'openai',
-      message: 'Note: OpenAI Whisper processes audio in 1-second chunks (not true real-time streaming)'
+      message: 'Note: OpenAI gpt-4o-transcribe processes audio in 1-second chunks (not true real-time streaming)'
     });
   }
   

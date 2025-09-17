@@ -52,6 +52,12 @@ async function createRealtimeSession(options = {}) {
         try {
           const message = JSON.parse(data.toString());
           
+          if (message.error) {
+            console.error('AssemblyAI error:', message.error);
+            session.close();
+            return;
+          }
+          
           if (message.message_type === 'SessionBegins') {
             console.log('AssemblyAI session started:', message.session_id);
           } else if (message.message_type === 'PartialTranscript') {
@@ -76,13 +82,11 @@ async function createRealtimeSession(options = {}) {
       ws.on('error', (error) => {
         console.error('AssemblyAI WebSocket error:', error);
         session.isConnected = false;
-        if (!session.isConnected) {
-          reject(error);
-        }
+        reject(error);
       });
 
-      ws.on('close', () => {
-        console.log('AssemblyAI WebSocket closed');
+      ws.on('close', (code, reason) => {
+        console.log('AssemblyAI WebSocket closed:', code, reason.toString());
         session.isConnected = false;
       });
 

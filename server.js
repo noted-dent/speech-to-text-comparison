@@ -185,56 +185,80 @@ io.on('connection', (socket) => {
       const { services = [], sampleRate = 16000, encoding = 'pcm16', channels = 1 } = config;
 
       // Initialize selected services
-      if (services.includes('assemblyai') && process.env.ASSEMBLYAI_API_KEY) {
-        const session = await assemblyAIRealtime.createRealtimeSession({
-          sampleRate,
-          encoding,
-          socket,
-          onTranscript: (transcript, isFinal) => {
-            socket.emit('transcriptResult', {
-              service: 'assemblyai',
-              transcript,
-              isFinal,
-              latency: Date.now() - session.lastAudioTimestamp
-            });
-          }
+      try {
+        if (services.includes('assemblyai') && process.env.ASSEMBLYAI_API_KEY) {
+          const session = await assemblyAIRealtime.createRealtimeSession({
+            sampleRate,
+            encoding,
+            socket,
+            onTranscript: (transcript, isFinal) => {
+              socket.emit('transcriptResult', {
+                service: 'assemblyai',
+                transcript,
+                isFinal,
+                latency: Date.now() - session.lastAudioTimestamp
+              });
+            }
+          });
+          serviceSessions.set('assemblyai', session);
+        }
+      } catch (error) {
+        console.error('Failed to initialize AssemblyAI:', error.message);
+        socket.emit('serviceError', { 
+          service: 'assemblyai', 
+          error: 'Failed to connect: ' + error.message 
         });
-        serviceSessions.set('assemblyai', session);
       }
 
-      if (services.includes('deepgram') && process.env.DEEPGRAM_API_KEY) {
-        const session = await deepgramRealtime.createRealtimeSession({
-          sampleRate,
-          encoding,
-          channels,
-          socket,
-          onTranscript: (transcript, isFinal) => {
-            socket.emit('transcriptResult', {
-              service: 'deepgram',
-              transcript,
-              isFinal,
-              latency: Date.now() - session.lastAudioTimestamp
-            });
-          }
+      try {
+        if (services.includes('deepgram') && process.env.DEEPGRAM_API_KEY) {
+          const session = await deepgramRealtime.createRealtimeSession({
+            sampleRate,
+            encoding,
+            channels,
+            socket,
+            onTranscript: (transcript, isFinal) => {
+              socket.emit('transcriptResult', {
+                service: 'deepgram',
+                transcript,
+                isFinal,
+                latency: Date.now() - session.lastAudioTimestamp
+              });
+            }
+          });
+          serviceSessions.set('deepgram', session);
+        }
+      } catch (error) {
+        console.error('Failed to initialize Deepgram:', error.message);
+        socket.emit('serviceError', { 
+          service: 'deepgram', 
+          error: 'Failed to connect: ' + error.message 
         });
-        serviceSessions.set('deepgram', session);
       }
 
-      if (services.includes('openai') && process.env.OPENAI_API_KEY) {
-        const session = await openAIRealtime.createRealtimeSession({
-          sampleRate,
-          encoding,
-          socket,
-          onTranscript: (transcript, isFinal) => {
-            socket.emit('transcriptResult', {
-              service: 'openai',
-              transcript,
-              isFinal,
-              latency: Date.now() - session.lastAudioTimestamp
-            });
-          }
+      try {
+        if (services.includes('openai') && process.env.OPENAI_API_KEY) {
+          const session = await openAIRealtime.createRealtimeSession({
+            sampleRate,
+            encoding,
+            socket,
+            onTranscript: (transcript, isFinal) => {
+              socket.emit('transcriptResult', {
+                service: 'openai',
+                transcript,
+                isFinal,
+                latency: Date.now() - session.lastAudioTimestamp
+              });
+            }
+          });
+          serviceSessions.set('openai', session);
+        }
+      } catch (error) {
+        console.error('Failed to initialize OpenAI:', error.message);
+        socket.emit('serviceError', { 
+          service: 'openai', 
+          error: 'Failed to connect: ' + error.message 
         });
-        serviceSessions.set('openai', session);
       }
 
       socket.emit('streamReady', { services: Array.from(serviceSessions.keys()) });
@@ -250,8 +274,10 @@ io.on('connection', (socket) => {
     // Forward audio to all active service sessions
     for (const [serviceName, session] of serviceSessions) {
       try {
-        await session.sendAudio(pcmBuffer);
-        session.lastAudioTimestamp = Date.now();
+        if (session && session.sendAudio) {
+          await session.sendAudio(pcmBuffer);
+          session.lastAudioTimestamp = Date.now();
+        }
       } catch (error) {
         console.error(`Error sending audio to ${serviceName}:`, error);
         socket.emit('serviceError', { 

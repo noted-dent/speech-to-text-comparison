@@ -9,7 +9,7 @@ const openai = new OpenAI({
 });
 
 /**
- * Transcribe audio using OpenAI's Whisper API
+ * Transcribe audio using OpenAI's gpt-4o-transcribe API
  * @param {Buffer} audioBuffer - The audio file buffer
  * @param {Object} options - Additional options (filename, mimetype)
  * @returns {Promise<Object>} Transcription result with text, time, and confidence
@@ -31,12 +31,11 @@ async function transcribeBatch(audioBuffer, options = {}) {
     // Create a readable stream from the file
     const audioStream = fs.createReadStream(tempPath);
 
-    // Perform transcription with Whisper
+    // Perform transcription with gpt-4o-transcribe
     const transcription = await openai.audio.transcriptions.create({
       file: audioStream,
-      model: 'whisper-1',
-      response_format: 'verbose_json',
-      timestamp_granularities: ['word', 'segment']
+      model: 'gpt-4o-transcribe',
+      response_format: 'json'  // gpt-4o-transcribe only supports json format
     });
 
     // Clean up temporary file
@@ -44,7 +43,7 @@ async function transcribeBatch(audioBuffer, options = {}) {
 
     const processingTime = Date.now() - startTime;
 
-    // Note: OpenAI Whisper doesn't provide confidence scores in the standard API
+    // Note: gpt-4o-transcribe doesn't provide confidence scores in the standard API
     // We'll use null for consistency
     const confidence = null;
 
@@ -54,9 +53,9 @@ async function transcribeBatch(audioBuffer, options = {}) {
       confidence: confidence,
       error: null,
       details: {
-        model: 'whisper-1',
-        language: transcription.language,
-        duration: transcription.duration,
+        model: 'gpt-4o-transcribe',
+        language: transcription.language || null,
+        duration: transcription.duration || null,
         words_count: transcription.words?.length || 0,
         segments_count: transcription.segments?.length || 0
       }

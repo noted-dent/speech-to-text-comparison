@@ -15,7 +15,7 @@ async function transcribeBatch(audioBuffer, options = {}) {
   try {
     // Configure Deepgram options
     const deepgramOptions = {
-      model: 'nova-2',
+      model: 'nova-3',
       language: 'en',
       smart_format: true,
       punctuate: true,
@@ -53,7 +53,7 @@ async function transcribeBatch(audioBuffer, options = {}) {
       confidence: averageConfidence,
       error: null,
       details: {
-        model: result.model_info?.name || 'nova-2',
+        model: result.model_info?.name || 'nova-3',
         language: result.results.channels[0].detected_language || 'en',
         audio_duration: result.metadata?.duration || null,
         words_count: alternative.words?.length || 0,

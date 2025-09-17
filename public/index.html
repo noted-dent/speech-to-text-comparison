@@ -3,41 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speech-to-Text Service Comparison Tool</title>
+    <title>Speech-to-Text Service Tester</title>
     <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Speech-to-Text Service Comparison</h1>
-            <p class="subtitle">Compare AssemblyAI, Deepgram, and OpenAI Whisper in real-time</p>
+            <h1>Speech-to-Text Service Tester</h1>
+            <p class="subtitle">Test AssemblyAI, Deepgram, or OpenAI GPT-4o Transcribe</p>
         </header>
 
         <main>
             <!-- Service Selection -->
             <section class="service-selection">
-                <h2>Select Services</h2>
+                <h2>Select Service</h2>
                 <div class="services">
-                    <label class="service-checkbox">
-                        <input type="checkbox" id="assemblyai" value="assemblyai" checked>
+                    <label class="service-radio">
+                        <input type="radio" name="service" id="assemblyai" value="assemblyai" checked>
                         <span class="service-label assemblyai">
                             <span class="service-icon">🎯</span>
                             AssemblyAI
                         </span>
                     </label>
-                    <label class="service-checkbox">
-                        <input type="checkbox" id="deepgram" value="deepgram" checked>
+                    <label class="service-radio">
+                        <input type="radio" name="service" id="deepgram" value="deepgram">
                         <span class="service-label deepgram">
                             <span class="service-icon">🌊</span>
                             Deepgram
                         </span>
                     </label>
-                    <label class="service-checkbox">
-                        <input type="checkbox" id="openai" value="openai" checked>
+                    <label class="service-radio">
+                        <input type="radio" name="service" id="openai" value="openai">
                         <span class="service-label openai">
                             <span class="service-icon">🤖</span>
-                            OpenAI Whisper
+                            OpenAI (GPT-4o)
                         </span>
                     </label>
                 </div>
@@ -163,7 +163,7 @@
         </main>
 
         <footer>
-            <p>Compare speech-to-text services side by side</p>
+            <p>Test and evaluate speech-to-text services</p>
             <p class="footer-links">
                 <a href="/health" target="_blank">Health Check</a> | 
                 <a href="/metrics" target="_blank">Metrics</a>

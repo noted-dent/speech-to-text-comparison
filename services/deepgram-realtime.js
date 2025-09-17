@@ -15,7 +15,7 @@ async function createRealtimeSession(options = {}) {
 
       // Configure live transcription options
       const connection = deepgram.listen.live({
-        model: 'nova-2',
+        model: 'nova-3',
         language: 'en',
         smart_format: true,
         punctuate: true,
@@ -41,7 +41,7 @@ async function createRealtimeSession(options = {}) {
         
         close: async function() {
           if (this.isConnected) {
-            this.connection.close();
+            this.connection.finish();
           }
           this.isConnected = false;
         }
@@ -90,7 +90,7 @@ async function createRealtimeSession(options = {}) {
       // Timeout if connection doesn't establish
       setTimeout(() => {
         if (!session.isConnected) {
-          connection.close();
+          connection.finish();
           reject(new Error('Deepgram connection timeout'));
         }
       }, 10000);
