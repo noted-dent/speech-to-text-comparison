@@ -10,8 +10,9 @@ async function createRealtimeSession(options = {}) {
   
   return new Promise((resolve, reject) => {
     try {
-      // AssemblyAI WebSocket URL with authentication
-      const url = `wss://api.assemblyai.com/v2/realtime/ws?sample_rate=${sampleRate}`;
+      // AssemblyAI WebSocket URL with authentication - using v3 endpoint
+      // Enable format_turns for better formatting
+      const url = `wss://streaming.assemblyai.com/v3/ws?sample_rate=${sampleRate}&format_turns=true`;
       
       const ws = new WebSocket(url, {
         headers: {
@@ -26,16 +27,15 @@ async function createRealtimeSession(options = {}) {
         
         sendAudio: async function(pcmBuffer) {
           if (this.isConnected && ws.readyState === WebSocket.OPEN) {
-            // AssemblyAI expects base64 encoded audio
-            const base64Audio = Buffer.from(pcmBuffer).toString('base64');
-            ws.send(JSON.stringify({ audio_data: base64Audio }));
+            // v3 API expects raw binary audio data, not base64
+            ws.send(pcmBuffer);
           }
         },
         
         close: async function() {
           if (ws.readyState === WebSocket.OPEN) {
-            // Send terminate message
-            ws.send(JSON.stringify({ terminate_session: true }));
+            // Send termination message for v3 API
+            ws.send(JSON.stringify({ type: 'SessionTermination', reason: 'User requested close' }));
             ws.close();
           }
           this.isConnected = false;
@@ -58,20 +58,18 @@ async function createRealtimeSession(options = {}) {
             return;
           }
           
-          if (message.message_type === 'SessionBegins') {
-            console.log('AssemblyAI session started:', message.session_id);
-          } else if (message.message_type === 'PartialTranscript') {
-            // Interim result
-            if (onTranscript) {
-              onTranscript(message.text, false);
+          // Handle v3 API message types
+          if (message.type === 'Begin') {
+            console.log('AssemblyAI session started:', message.id);
+          } else if (message.type === 'Turn') {
+            // Handle turn-based transcription result
+            if (onTranscript && message.transcript) {
+              // Check if this is a final transcript
+              const isFinal = message.speech_final || false;
+              onTranscript(message.transcript, isFinal);
             }
-          } else if (message.message_type === 'FinalTranscript') {
-            // Final result
-            if (onTranscript) {
-              onTranscript(message.text, true);
-            }
-          } else if (message.message_type === 'SessionTerminated') {
-            console.log('AssemblyAI session terminated');
+          } else if (message.type === 'Termination') {
+            console.log('AssemblyAI session terminated:', message.reason);
             session.close();
           }
         } catch (error) {
