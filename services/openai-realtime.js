@@ -85,6 +85,7 @@ async function createRealtimeSession(options = {}) {
           file: audioStream,
           model: 'gpt-4o-transcribe',
           language: 'en',  // Force English transcription
+          prompt: 'Transcribe in English only. Do not translate.',  // Explicit instruction to prevent translation
           response_format: 'json'  // gpt-4o-transcribe only supports json format
         });
         
