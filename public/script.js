@@ -177,6 +177,9 @@ let mediaRecorder = null;
 let recordingStartTime = null;
 let recordingTimer = null;
 
+// Transcript state management for real-time mode
+const transcriptState = new Map(); // Stores accumulated transcripts per service
+
 // DOM elements
 const batchInterface = document.getElementById('batch-interface');
 const realtimeInterface = document.getElementById('realtime-interface');
@@ -506,6 +509,15 @@ function handleTranscriptResult(data) {
         placeholder.remove();
     }
 
+    // Initialize transcript state for service if not exists
+    if (!transcriptState.has(service)) {
+        transcriptState.set(service, {
+            finalText: '',
+            interimText: '',
+            lastUpdateTime: Date.now()
+        });
+    }
+
     // Find or create service container
     let serviceContainer = transcriptsContainer.querySelector(`.transcript-${service}`);
     if (!serviceContainer) {
@@ -516,32 +528,45 @@ function handleTranscriptResult(data) {
                 <h4>${service.charAt(0).toUpperCase() + service.slice(1)}</h4>
                 <span class="latency">Latency: ${latency}ms</span>
             </div>
-            <div class="transcript-content"></div>
+            <div class="transcript-content">
+                <div class="final-text"></div>
+                <div class="interim-text"></div>
+            </div>
         `;
         transcriptsContainer.appendChild(serviceContainer);
     }
 
+    // Get transcript state
+    const state = transcriptState.get(service);
+    
     // Update transcript content
     const contentDiv = serviceContainer.querySelector('.transcript-content');
+    const finalDiv = contentDiv.querySelector('.final-text');
+    const interimDiv = contentDiv.querySelector('.interim-text');
+    
     if (isFinal) {
-        // Add final transcript as a new paragraph
-        const p = document.createElement('p');
-        p.className = 'final-transcript';
-        p.textContent = transcript;
-        contentDiv.appendChild(p);
+        // Append final transcript to accumulated text
+        state.finalText += (state.finalText ? ' ' : '') + transcript;
+        state.interimText = ''; // Clear interim text when we get final
+        
+        // Update display
+        finalDiv.innerHTML = state.finalText
+            .split(' ')
+            .map(word => `<span class="transcript-word">${word}</span>`)
+            .join(' ');
+        interimDiv.textContent = '';
         
         // Auto-scroll to bottom
         contentDiv.scrollTop = contentDiv.scrollHeight;
     } else {
         // Update interim transcript
-        let interimSpan = contentDiv.querySelector('.interim-transcript');
-        if (!interimSpan) {
-            interimSpan = document.createElement('span');
-            interimSpan.className = 'interim-transcript';
-            contentDiv.appendChild(interimSpan);
-        }
-        interimSpan.textContent = transcript;
+        state.interimText = transcript;
+        interimDiv.innerHTML = `<span class="interim-transcript">${transcript}</span>`;
     }
+    
+    // Update state
+    state.lastUpdateTime = Date.now();
+    transcriptState.set(service, state);
 
     // Update latency
     serviceContainer.querySelector('.latency').textContent = `Latency: ${latency}ms`;
@@ -550,6 +575,8 @@ function handleTranscriptResult(data) {
 function clearRealtimeTranscripts() {
     const transcriptsContainer = document.getElementById('realtime-transcripts');
     transcriptsContainer.innerHTML = '';
+    // Clear transcript state
+    transcriptState.clear();
 }
 
 // Results display

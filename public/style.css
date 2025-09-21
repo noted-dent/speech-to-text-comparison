@@ -432,16 +432,64 @@ header h1 {
 .transcript-content {
     max-height: 150px;
     overflow-y: auto;
+    padding: 10px;
+    background-color: #fafafa;
+    border-radius: 4px;
 }
 
-.final-transcript {
+.final-text {
     margin-bottom: 10px;
-    line-height: 1.5;
+    line-height: 1.8;
+    color: #2c3e50;
+}
+
+.transcript-word {
+    display: inline-block;
+    margin: 2px;
+    padding: 2px 4px;
+    background-color: #e8f4f8;
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.transcript-word:hover {
+    background-color: #d0e8f0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        background-color: #b8e4f8;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        background-color: #e8f4f8;
+        transform: scale(1);
+    }
+}
+
+.interim-text {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e0e0e0;
 }
 
 .interim-transcript {
     color: #7f8c8d;
     font-style: italic;
+    opacity: 0.8;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 1;
+    }
 }
 
 /* Results Section */
