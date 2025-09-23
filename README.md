@@ -140,6 +140,21 @@ Each service has two modules:
 - **Deepgram**: Live WebSocket API with utterance detection
 - **OpenAI**: Pseudo real-time (1-second chunks) as Whisper doesn't support streaming
 
+### Verbatim Transcription Settings (AssemblyAI)
+
+For dental appointment recordings where word-for-word output is required and numerals must be transcribed as spoken words, this project configures AssemblyAI as follows:
+
+- disfluencies: true (include fillers like "um", "uh")
+- format_text: false (disable automatic formatting and numeral conversion)
+- filter_profanity: false (no censorship)
+- speaker_labels: true (diarization)
+- batch-only prompt: a concise instruction to transcribe verbatim for dental context
+
+These options are wired into:
+
+- `services/assemblyai-batch.js` via `client.transcripts.create`
+- `services/assemblyai-realtime.js` via WebSocket query parameters
+
 ## Deployment
 
 ### Docker Deployment

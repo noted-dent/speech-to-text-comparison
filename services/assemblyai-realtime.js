@@ -11,8 +11,8 @@ async function createRealtimeSession(options = {}) {
   return new Promise((resolve, reject) => {
     try {
       // AssemblyAI WebSocket URL with authentication - using v3 endpoint
-      // Enable format_turns for better formatting
-      const url = `wss://streaming.assemblyai.com/v3/ws?sample_rate=${sampleRate}&format_turns=true`;
+      // Enable format_turns for better formatting and set verbatim behavior
+      const url = `wss://streaming.assemblyai.com/v3/ws?sample_rate=${sampleRate}&format_turns=true&disfluencies=true&format_text=false&filter_profanity=false&speaker_labels=true`;
       
       const ws = new WebSocket(url, {
         headers: {

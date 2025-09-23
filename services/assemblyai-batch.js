@@ -8,6 +8,9 @@ const client = new AssemblyAI({
   apiKey: process.env.ASSEMBLYAI_API_KEY
 });
 
+// Verbatim prompt for dental appointment transcriptions
+const DENTAL_VERBATIM_PROMPT = 'Transcribe the audio verbatim for a dental appointment. Capture every word exactly as spoken, including fillers (um, uh), false starts, repetitions, stutters, and partial words. Mark non-speech events in brackets like (laughter), (sigh), (cough). Do not paraphrase or summarize. Preserve dental and medical terminology exactly. Do not record numbers spoken as numerals, record them as words.';
+
 /**
  * Transcribe audio using AssemblyAI's batch API
  * @param {Buffer} audioBuffer - The audio file buffer
@@ -34,6 +37,12 @@ async function transcribeBatch(audioBuffer, options = {}) {
     // Create transcription job
     const transcript = await client.transcripts.create({
       audio_url: uploadUrl,
+      // Verbatim configuration
+      disfluencies: true,
+      format_text: false, // Keep spoken numerals as words and avoid formatting
+      filter_profanity: false,
+      prompt: DENTAL_VERBATIM_PROMPT,
+      // Existing options
       language_detection: true,
       speaker_labels: true,
       auto_highlights: true,
